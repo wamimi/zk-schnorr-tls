@@ -1,0 +1,16 @@
+[package]
+name = "zk_schnorr_lib"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+curve25519-dalek = { version = "4", features = ["alloc", "u64_backend"] }
+rand_core = "0.6"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+aes-gcm = "0.10"
+aes = "0.8"
+aead = "0.5"
+argon2 = "0.5"
+rpassword = "7.0"
+zeroize = "1.6"

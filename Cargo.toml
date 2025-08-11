@@ -1,0 +1,7 @@
+[workspace]
+members = [
+    "prover",
+    "verifier",
+    "simulator",
+    "zk_schnorr_lib"
+]
