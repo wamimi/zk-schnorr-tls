@@ -1,6 +1,6 @@
 use anyhow::Result; //a macro that allows us to use the `?` operator to propagate errors.
-use tokio::net::TcpStream;
-use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
+use tokio::net::TcpStream; // coonection to a tcp server
+use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader}; // async read and write operations
 use curve25519_dalek::constants::RISTRETTO_BASEPOINT_POINT;
 use curve25519_dalek::scalar::Scalar;
 use rand::rngs::OsRng;
