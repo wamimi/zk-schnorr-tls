@@ -5,23 +5,23 @@ use curve25519_dalek::constants::RISTRETTO_BASEPOINT_POINT; // this is the stand
 use curve25519_dalek::scalar::Scalar; // a scalar is a small integer that can be used to multiply a point on the curve
 use rand::rngs::OsRng; // a random number generator which is cryptographically secure
 
-// Import shared library
-use zk_schnorr_lib::{Message, scalar_from_hex, point_to_hex, scalar_to_hex};
+//shared library
+use zk_schnorr_lib::{Message, scalar_from_hex, point_to_hex, scalar_to_hex}; //message type and functions to convert between hex and scalar and point
 
-#[tokio::main]
+#[tokio::main] // macro that sets up the async runtime 
 async fn main() -> Result<()> {
-    // Prover secret: in real usage, load securely from key storage.
-    let secret_seed = b"demo-prover-secret";
-    let x = Scalar::hash_from_bytes::<sha2::Sha512>(secret_seed);
-    let X = RISTRETTO_BASEPOINT_POINT * x;
-    println!("(Prover) Public key X: {}", point_to_hex(&X));
+    // Prover secret
+    let secret_seed = b"demo-prover-secret"; // a secret seed for the prover
+    let x = Scalar::hash_from_bytes::<sha2::Sha512>(secret_seed); // hash the secret seed to get a scalar
+    let X = RISTRETTO_BASEPOINT_POINT * x; // multiply the generator point by the scalar to get the public key
+    println!("(Prover) Public key X: {}", point_to_hex(&X)); // print the public key in hex
 
-    let stream = TcpStream::connect("127.0.0.1:4000").await?;
-    let (read_half, mut write_half) = stream.into_split();
-    let mut reader = BufReader::new(read_half).lines();
+    let stream = TcpStream::connect("127.0.0.1:4000").await?; // connect to the verifier , wait for the connection
+    let (read_half, mut write_half) = stream.into_split(); // split the stream into two halves which are read and write for concurrent use
+    let mut reader = BufReader::new(read_half).lines(); // create a buffered reader for the read half and remember that ist mutable
 
     // 1) compute commit R = k*G and send
-    let k = Scalar::random(&mut OsRng);
+    let k = Scalar::random(&mut OsRng); // generate a random scalar
     let R = RISTRETTO_BASEPOINT_POINT * k;
     let commit_msg = Message::commit(&R);
     write_half.write_all((serde_json::to_string(&commit_msg)? + "\n").as_bytes()).await?;
