@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::Result; //a macro that allows us to use the `?` operator to propagate errors.
 use tokio::net::TcpStream;
 use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
 use curve25519_dalek::constants::RISTRETTO_BASEPOINT_POINT;
