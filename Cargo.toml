@@ -5,3 +5,4 @@ members = [
     "simulator",
     "zk_schnorr_lib"
 ]
+resolver = "2"
