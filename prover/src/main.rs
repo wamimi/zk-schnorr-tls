@@ -10,7 +10,7 @@ use zk_schnorr_lib::{Message, scalar_from_hex, point_to_hex, scalar_to_hex}; //m
 
 #[tokio::main] // macro that sets up the async runtime 
 async fn main() -> Result<()> {
-    // Prover secret
+    // key generation
     let secret_seed = b"demo-prover-secret"; // a secret seed for the prover
     let x = Scalar::hash_from_bytes::<sha2::Sha512>(secret_seed); // hash the secret seed to get a scalar
     let X = RISTRETTO_BASEPOINT_POINT * x; // multiply the generator point by the scalar to get the public key
@@ -20,19 +20,23 @@ async fn main() -> Result<()> {
     let (read_half, mut write_half) = stream.into_split(); // split the stream into two halves which are read and write for concurrent use
     let mut reader = BufReader::new(read_half).lines(); // create a buffered reader for the read half and remember that ist mutable
 
+     //COMMITMENT PHASE
+
     // 1) compute commit R = k*G and send
-    let k = Scalar::random(&mut OsRng); // generate a random scalar
-    let R = RISTRETTO_BASEPOINT_POINT * k;
-    let commit_msg = Message::commit(&R);
-    write_half.write_all((serde_json::to_string(&commit_msg)? + "\n").as_bytes()).await?;
-    println!("(Prover) Sent commit R: {}", point_to_hex(&R));
+    let k = Scalar::random(&mut OsRng); // generate a random scalar(cryptographically secure) also a mutable referenve to RNG cause it changes internal state
+    let R = RISTRETTO_BASEPOINT_POINT * k; // multiply the generator point by the scalar to get the commitment
+    let commit_msg = Message::commit(&R); // create a message with the commitment
+    write_half.write_all((serde_json::to_string(&commit_msg)? + "\n").as_bytes()).await?; // write the message to the write half and also converts JSON to string and string to bytes
+    println!("(Prover) Sent commit R: {}", point_to_hex(&R)); // print the commitment in hex
+
+    //CHALLENGE PHASE
 
     // 2) read challenge
-    let Some(line) = reader.next_line().await? else { anyhow::bail!("connection closed") };
-    let ch_msg: Message = serde_json::from_str(&line)?;
-    if ch_msg.kind != "challenge" { anyhow::bail!("expected challenge") }
-    let c = scalar_from_hex(&ch_msg.payload)?;
-    println!("(Prover) Received challenge c: {}", &ch_msg.payload);
+    let Some(line) = reader.next_line().await? else { anyhow::bail!("connection closed") }; // read the next line from the reader and uses the let else pattern to handle the case where the line is None and the bail macro to return an error
+    let ch_msg: Message = serde_json::from_str(&line)?; // convert the line to a message
+    if ch_msg.kind != "challenge" { anyhow::bail!("expected challenge") } // check if the message is a challenge to avoid malicious behavior
+    let c = scalar_from_hex(&ch_msg.payload)?; // convert the payload to a scalar
+    println!("(Prover) Received challenge c: {}", &ch_msg.payload); // print the challenge in hex
 
     // 3) compute s = k + c*x and send response
     let s = k + c * x;
