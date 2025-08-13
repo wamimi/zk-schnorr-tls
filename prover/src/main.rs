@@ -2,8 +2,8 @@ use anyhow::Result; //a macro that allows us to use the `?` operator to propagat
 use tokio::net::TcpStream; // coonection to a tcp server
 use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader}; // async read and write operations
 use curve25519_dalek::constants::RISTRETTO_BASEPOINT_POINT; // this is the standard generator point G for the curve
-use curve25519_dalek::scalar::Scalar;
-use rand::rngs::OsRng;
+use curve25519_dalek::scalar::Scalar; // a scalar is a small integer that can be used to multiply a point on the curve
+use rand::rngs::OsRng; // a random number generator which is cryptographically secure
 
 // Import shared library
 use zk_schnorr_lib::{Message, scalar_from_hex, point_to_hex, scalar_to_hex};
