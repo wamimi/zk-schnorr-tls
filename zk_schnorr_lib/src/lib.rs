@@ -1,21 +1,18 @@
-//! Zero-Knowledge Schnorr Protocol Library
-//! 
 //! This library provides the core types and utilities for implementing
-//! a Schnorr identification scheme over secure channels.
-
-use curve25519_dalek::ristretto::RistrettoPoint;
-use curve25519_dalek::scalar::Scalar;
-use hex::{encode as hex_encode, decode as hex_decode};
-use serde::{Deserialize, Serialize};
-
+// ristretto because it provides a clean safe abstraction overthe curve 25519
+use curve25519_dalek::ristretto::RistrettoPoint; // reperesents a point on the Curve25519 elliptic curve
+use curve25519_dalek::scalar::Scalar; // reperesents a scalar value on the curves field
+use hex::{encode as hex_encode, decode as hex_decode}; // to transmit binary data as readabe text
+use serde::{Deserialize, Serialize}; // trait fir converting strucys to and from JSON
 
 
-/// Message types exchanged between prover and verifier
-#[derive(Serialize, Deserialize, Debug, Clone)]
+
+// Message types exchanged between prover and verifier
+#[derive(Serialize, Deserialize, Debug, Clone)] // macro to implement serialization and deserialization for the Message struct, Debug for printing, Clone for duplicating the struct
 pub struct Message {
-    /// The type of message: "commit", "challenge", or "response"
+    // the type of message "commit", "challenge", or "response"
     pub kind: String,
-    /// The payload data as a hex-encoded string
+    // The payload data as a hex-encoded string
     pub payload: String,
 }
 
