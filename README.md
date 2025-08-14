@@ -58,7 +58,7 @@ cargo run --bin prover
 
 ### 4. Watch the Protocol in Action
 
-You'll see the complete protocol exchange:
+You'll see the complete protocol exchange like this:
 
 ![Protocol Demo](./demo-screenshot.png)
 
@@ -96,14 +96,34 @@ You, as the person running both programs, know the interaction was honest. But t
 
 ## How It Works
 
-The Schnorr protocol follows these steps:
+## The Mathematics Behind Schnorr
+# The Setup:
+We work on an elliptic curve (specifically Curve25519)
 
-1. **Commitment**: Prover generates a random commitment `R = k*G`
-2. **Challenge**: Verifier sends a random challenge `c`  
-3. **Response**: Prover responds with `s = k + c*x` (where `x` is the secret)
-4. **Verification**: Verifier checks if `s*G = R + c*X` (where `X` is the public key)
+`G`= base point (generator) on the curve
+`x` = prover's secret key (a random scalar)
+`X = x * G` = prover's public key (a point on the curve)
 
-The math works out if and only if the prover knows the secret `x`!
+# The Three-Step Dance:
+# Step 1 - Commitment:
+Prover picks random `k` (nonce)
+Computes `R = k * G` (commitment)
+Sends `R` to verifier
+
+# Step 2 - Challenge:
+Verifier picks random `c` (challenge)
+Sends `c` to prover
+
+# Step 3 - Response:
+Prover computes `s = k + c * x` (response)
+Sends `s` to verifier
+
+# Verification:
+Verifier checks: `s * G ?` = `R + c * X`
+This works because: `s * G` = `(k + c * x) * G` = `k * G + c * x * G`  = `R + c * X`
+
+# Why is this Zero-Knowledge?
+The beautiful thing is that `s` looks completely random to the verifier! They can verify the equation is correct, but s doesn't reveal anything about `x` because it's "masked" by the random `k`
 
 
 - **Curve25519-dalek**: Elliptic curve cryptography
