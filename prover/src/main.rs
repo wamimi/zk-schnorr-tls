@@ -38,11 +38,13 @@ async fn main() -> Result<()> {
     let c = scalar_from_hex(&ch_msg.payload)?; // convert the payload to a scalar
     println!("(Prover) Received challenge c: {}", &ch_msg.payload); // print the challenge in hex
 
+    //RESPONSE PHASE
+
     // 3) compute s = k + c*x and send response
-    let s = k + c * x;
-    let resp_msg = Message::response(&s);
-    write_half.write_all((serde_json::to_string(&resp_msg)? + "\n").as_bytes()).await?;
-    println!("(Prover) Sent response s: {}", scalar_to_hex(&s));
+    let s = k + c * x; // this is the core Schnorr computation in scalar arithmetic and the prover is proving that it knows the secret key x without revealing it
+    let resp_msg = Message::response(&s); // create a message with the response
+    write_half.write_all((serde_json::to_string(&resp_msg)? + "\n").as_bytes()).await?; // write the message to the write half and also converts JSON to string and string to bytes
+    println!("(Prover) Sent response s: {}", scalar_to_hex(&s)); // print the response in hex
 
     Ok(())
 }
