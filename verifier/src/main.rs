@@ -5,30 +5,29 @@ use curve25519_dalek::constants::RISTRETTO_BASEPOINT_POINT;
 use curve25519_dalek::scalar::Scalar;
 use rand::rngs::OsRng;
 
-// Import our shared library
+//shared library
 use zk_schnorr_lib::{Message, scalar_from_hex, point_from_hex, point_to_hex, scalar_to_hex};
 
 #[tokio::main]
 async fn main() -> Result<()> {
     println!("(Verifier) Starting server on 127.0.0.1:4000");
     
-    // Bind to the address where the prover will connect
+    // binding to the address where the prover will connect
     let listener = TcpListener::bind("127.0.0.1:4000").await?;
     
     loop {
-        // Accept incoming connections
+        // accept incoming connections
         let (stream, addr) = listener.accept().await?;
         println!("(Verifier) Accepted connection from: {}", addr);
         
-        // Handle each connection in a separate task
-        // For now, we'll handle one at a time, but this shows the pattern
+        // handle each connection in a separate task
         if let Err(e) = handle_prover(stream).await {
             eprintln!("(Verifier) Error handling prover: {}", e);
         }
     }
 }
 
-/// Handle a single prover connection and run the Schnorr verification protocol
+/// handle a single prover connection and run the Schnorr verification protocol
 async fn handle_prover(stream: TcpStream) -> Result<()> {
     let (read_half, mut write_half) = stream.into_split();
     let mut reader = BufReader::new(read_half).lines();
