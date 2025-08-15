@@ -3,7 +3,7 @@
 use curve25519_dalek::ristretto::RistrettoPoint; // reperesents a point on the Curve25519 elliptic curve
 use curve25519_dalek::scalar::Scalar; // reperesents a scalar value on the curves field
 use hex::{encode as hex_encode, decode as hex_decode}; // to transmit binary data as readabe text
-use serde::{Deserialize, Serialize}; // trait fir converting strucys to and from JSON
+use serde::{Deserialize, Serialize}; // trait for converting structs to and from JSON
 
 
 
@@ -64,8 +64,8 @@ pub fn scalar_to_hex(s: &Scalar) -> String { // s is a reference to a scalar
 
 // Convert a RistrettoPoint to a hex string
 // 
-/// We compress the point to 32 bytes before encoding to hex.
-/// This is more efficient than the uncompressed representation.
+// compress the point to 32 bytes before encoding to hex.
+// This is more efficient than the uncompressed representation.
 pub fn point_to_hex(p: &RistrettoPoint) -> String {
     hex_encode(p.compress().to_bytes())
 }
