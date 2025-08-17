@@ -18,14 +18,14 @@ async fn main() -> Result<()> {
 
     let stream = TcpStream::connect("127.0.0.1:4000").await?; // connect to the verifier , wait for the connection
     let (read_half, mut write_half) = stream.into_split(); // split the stream into two halves which are read and write for concurrent use
-    let mut reader = BufReader::new(read_half).lines(); // create a buffered reader for the read half and remember that ist mutable
+    let mut reader = BufReader::new(read_half).lines(); // create a buffered reader for the read half and remember that its not mutable
 
      //COMMITMENT PHASE
 
     // 1) compute commit R = k*G and send
     let k = Scalar::random(&mut OsRng); // generate a random scalar(cryptographically secure) also a mutable referenve to RNG cause it changes internal state
     let R = RISTRETTO_BASEPOINT_POINT * k; // multiply the generator point by the scalar to get the commitment
-    let commit_msg = Message::commit(&R); // create a message with the commitment
+    let commit_msg = Message::commit(&R); // create a message with the commitment and a reference to the point R
     write_half.write_all((serde_json::to_string(&commit_msg)? + "\n").as_bytes()).await?; // write the message to the write half and also converts JSON to string and string to bytes
     println!("(Prover) Sent commit R: {}", point_to_hex(&R)); // print the commitment in hex
 
