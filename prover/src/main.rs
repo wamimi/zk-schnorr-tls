@@ -1,6 +1,6 @@
-use anyhow::Result; //a macro that allows us to use the `?` operator to propagate errors.
-use tokio::net::TcpStream; // coonection to a tcp server
-use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader}; // async read and write operations
+use anyhow::Result; //a macro that allows us to use the `?` operator to propagate different types of errors eg I/O, JSON, hex
+use tokio::net::TcpStream; // async programming , network connection between client and server
+use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader}; // async read and write operations they are extension 
 use curve25519_dalek::constants::RISTRETTO_BASEPOINT_POINT; // this is the standard generator point G for the curve
 use curve25519_dalek::scalar::Scalar; // a scalar is a small integer that can be used to multiply a point on the curve
 use rand::rngs::OsRng; // a random number generator which is cryptographically secure
