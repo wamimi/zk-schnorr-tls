@@ -37,6 +37,7 @@ async fn main() -> Result<()> {
     if ch_msg.kind != "challenge" { anyhow::bail!("expected challenge") } // check if the message is a challenge to avoid malicious behavior
     let c = scalar_from_hex(&ch_msg.payload)?; // convert the payload to a scalar
     println!("(Prover) Received challenge c: {}", &ch_msg.payload); // print the challenge in hex
+    // anyhow::bail! macro is a macro from the anyhow library and acts a shortcut to immediately stop nthe function and return an err with the given message
 
     //RESPONSE PHASE
 
