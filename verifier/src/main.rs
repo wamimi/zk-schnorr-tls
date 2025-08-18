@@ -22,7 +22,7 @@ use zk_schnorr_lib::{Message, scalar_from_hex, point_from_hex, point_to_hex, sca
         
         // handle each connection in a separate task - pattern matching and oly executes if there is an error
         if let Err(e) = handle_prover(stream).await {
-            eprintln!("(Verifier) Error handling prover: {}", e); // prints to stderr standard error stream
+            eprintln!("(Verifier) Error handling prover: {}", e); // prints to stderr standard error stream for logging errors. it ensures even if one connection fails, the server does not crash
         }
     }
 }
