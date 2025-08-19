@@ -74,7 +74,7 @@ async fn handle_prover(stream: TcpStream) -> Result<()> {
     let left_side = RISTRETTO_BASEPOINT_POINT * s;  // s*G - multiply the generator point by the scalar to get the left side of the equation
     let right_side = R + (X * c);                   // R + c*X
     
-    if left_side == right_side {
+    if left_side == right_side { // the curve25519-dalek  library has implemented the equality operator for Ristretto point
         println!("(Verifier) ✅ PROOF VERIFIED! The prover knows the secret x.");
         println!("(Verifier) Verification equation: s*G = R + c*X ✓");
     } else {
