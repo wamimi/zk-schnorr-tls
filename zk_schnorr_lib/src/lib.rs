@@ -52,7 +52,7 @@ pub fn scalar_from_hex(s: &str) -> Result<Scalar, hex::FromHexError> { // s is a
     if bytes.len() != 32 { // check if the length of the bytes is 32
         return Err(hex::FromHexError::InvalidStringLength); // return an error if the length is not 32
     }
-    let mut arr = [0u8; 32]; // create an array of 32 bytes where each element is 0
+    let mut arr = [0u8; 32]; // create an array of 32 bytes
     arr.copy_from_slice(&bytes); // copy the bytes into the array from the vec
     Ok(Scalar::from_bytes_mod_order(arr)) // convert the array to a scalar reducing modulo the curve order
 }
@@ -68,7 +68,7 @@ pub fn scalar_to_hex(s: &Scalar) -> String { // s is a reference to a scalar
 // This is more efficient than the uncompressed representation.
 pub fn point_to_hex(p: &RistrettoPoint) -> String {
     hex_encode(p.compress().to_bytes())
-}
+} 
 
 /// Convert a hex string to a RistrettoPoint
 pub fn point_from_hex(s: &str) -> Result<RistrettoPoint, PointDecodeError> { // s is a reference to a string

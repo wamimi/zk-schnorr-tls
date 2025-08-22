@@ -33,7 +33,7 @@ async fn main() -> Result<()> {
 
     // 2) read challenge
     let Some(line) = reader.next_line().await? else { anyhow::bail!("connection closed") }; // read the next line from the reader  and uses the let else pattern to handle the case where the line is None and the bail macro to return an error
-    let ch_msg: Message = serde_json::from_str(&line)?; // convert the line to a message
+    let ch_msg: Message = serde_json::from_str(&line)?; // convert the line to a message struct. 
     if ch_msg.kind != "challenge" { anyhow::bail!("expected challenge") } // check if the message is a challenge to avoid malicious behavior
     let c = scalar_from_hex(&ch_msg.payload)?; // convert the payload to a scalar
     println!("(Prover) Received challenge c: {}", &ch_msg.payload); // print the challenge in hex
