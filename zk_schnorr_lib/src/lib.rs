@@ -5,6 +5,10 @@ use curve25519_dalek::scalar::Scalar; // reperesents a scalar value on the curve
 use hex::{encode as hex_encode, decode as hex_decode}; // to transmit binary data as readabe text
 use serde::{Deserialize, Serialize}; // trait for converting structs to and from JSON
 
+// TLS certificate generation
+use rcgen::{Certificate, CertificateParams, DistinguishedName};
+use rustls::{Certificate as RustlsCertificate, PrivateKey, ServerConfig, ClientConfig, RootCertStore};
+
 
 
 // Message types exchanged between prover and verifier
@@ -95,4 +99,120 @@ pub enum PointDecodeError {
     InvalidLength(usize),
     #[error("Invalid point: failed to decompress")] // defines error message format
     InvalidPoint,
+}
+
+// TLS Certificate Management
+// =========================
+
+/// Errors that can occur during TLS certificate operations
+#[derive(Debug, thiserror::Error)]
+pub enum TlsError {
+    #[error("Certificate generation failed: {0}")]
+    CertificateGeneration(#[from] rcgen::RcgenError),
+    #[error("TLS configuration failed: {0}")]
+    TlsConfig(#[from] rustls::Error),
+    #[error("IO error: {0}")]
+    Io(#[from] std::io::Error),
+}
+
+/// Generated TLS certificate and private key pair
+pub struct TlsCertificate {
+    pub certificate: Certificate,
+    pub cert_der: Vec<u8>,
+    pub private_key_der: Vec<u8>,
+}
+
+/// Generate a self-signed certificate for development use
+/// 
+/// This creates a certificate valid for 'localhost' and '127.0.0.1'
+/// which is perfect for our local development and testing.
+/// 
+/// # Returns
+/// A `TlsCertificate` containing both the certificate and private key
+/// in DER format, ready to be used with rustls.
+pub fn generate_self_signed_cert() -> Result<TlsCertificate, TlsError> {
+    // Set up certificate parameters
+    let mut params = CertificateParams::new(vec![
+        "localhost".to_string(),
+        "127.0.0.1".to_string(),
+    ]);
+    
+    // Set certificate details
+    params.distinguished_name = DistinguishedName::new();
+    params.distinguished_name.push(
+        rcgen::DnType::CommonName,
+        "ZK Schnorr TLS Demo"
+    );
+    params.distinguished_name.push(
+        rcgen::DnType::OrganizationName,
+        "Zero Knowledge Demo"
+    );
+    
+    // Generate the certificate
+    let certificate = Certificate::from_params(params)?;
+    
+    // Get DER-encoded certificate and private key
+    let cert_der = certificate.serialize_der()?;
+    let private_key_der = certificate.serialize_private_key_der();
+    
+    println!("📜 Generated self-signed TLS certificate for localhost");
+    println!("   Valid for: localhost, 127.0.0.1");
+    println!("   Issuer: ZK Schnorr TLS Demo");
+    
+    Ok(TlsCertificate {
+        certificate,
+        cert_der,
+        private_key_der,
+    })
+}
+
+/// Create a TLS server configuration from a certificate
+/// 
+/// This sets up the server-side TLS configuration that will:
+/// - Use the provided certificate for authentication
+/// - Support modern TLS versions (1.2 and 1.3)
+/// - Use secure cipher suites
+/// - Not require client certificates (server-only authentication)
+pub fn create_server_config(tls_cert: &TlsCertificate) -> Result<ServerConfig, TlsError> {
+    let cert = RustlsCertificate(tls_cert.cert_der.clone());
+    let private_key = PrivateKey(tls_cert.private_key_der.clone());
+    
+    let config = ServerConfig::builder()
+        .with_safe_defaults()
+        .with_no_client_auth()
+        .with_single_cert(vec![cert], private_key)?;
+    
+    println!("🔒 Created TLS server configuration");
+    println!("   Mode: Server-only authentication (no client certs required)");
+    
+    Ok(config)
+}
+
+/// Create a TLS client configuration that accepts our self-signed certificate
+/// 
+/// For development, we need to explicitly trust our self-signed certificate
+/// since it won't be signed by a standard Certificate Authority.
+/// 
+/// # Security Note
+/// This configuration accepts ANY certificate without validation!
+/// This is ONLY safe for development/demo purposes on localhost.
+/// Production code should use proper certificate validation.
+pub fn create_client_config(server_cert: &TlsCertificate) -> Result<ClientConfig, TlsError> {
+    let mut root_store = RootCertStore::empty();
+    
+    // Add our self-signed certificate as a trusted root
+    // This is needed because our cert isn't signed by a standard CA
+    let cert = RustlsCertificate(server_cert.cert_der.clone());
+    root_store.add(&cert)?;
+    
+    let config = ClientConfig::builder()
+        .with_safe_defaults()
+        .with_root_certificates(root_store)
+        .with_no_client_auth();
+    
+    println!("🔒 Created TLS client configuration");
+    println!("   Mode: Accept self-signed certificate for localhost");
+    println!("   ⚠️  Development only - not for production!");
+    
+    Ok(config)
 }
